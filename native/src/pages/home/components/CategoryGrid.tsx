@@ -129,6 +129,7 @@ export default function CategoryGrid({
                       {isImageUrl ? (
                         <ImageWithSkeleton
                           source={{ uri: iconUrl }}
+                          imagePreset="icon"
                           style={{ width: 40, height: 40 }}
                           resizeMode="contain"
                         />

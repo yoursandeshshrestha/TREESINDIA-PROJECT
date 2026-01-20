@@ -93,6 +93,7 @@ export default function BannerCarousel({ banners, isLoading, onBannerPress }: Ba
                 style={{ width: SCREEN_WIDTH }}>
                 <ImageWithSkeleton
                   source={{ uri: banner.image }}
+                  imagePreset="banner"
                   style={{
                     width: SCREEN_WIDTH,
                     height: BANNER_HEIGHT,
