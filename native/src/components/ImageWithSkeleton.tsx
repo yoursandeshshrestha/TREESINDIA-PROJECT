@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Image, ImageProps, Animated, Easing } from 'react-native';
+import { optimizeCloudinaryImage, IMAGE_PRESETS, ImageTransformOptions } from '../utils/imageOptimization';
 
 interface ImageWithSkeletonProps extends Omit<ImageProps, 'source'> {
   source: { uri: string } | number;
   skeletonColor?: string;
   className?: string;
+  imagePreset?: keyof typeof IMAGE_PRESETS;
+  optimizationOptions?: ImageTransformOptions;
 }
 
 export default function ImageWithSkeleton({
@@ -12,12 +15,24 @@ export default function ImageWithSkeleton({
   skeletonColor = '#F3F4F6',
   className = '',
   style,
+  imagePreset = 'thumbnail',
+  optimizationOptions,
   ...props
 }: ImageWithSkeletonProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const shimmerAnim = useRef(new Animated.Value(0)).current;
+
+  // Optimize image URL if it's a Cloudinary URL
+  const optimizedSource = React.useMemo(() => {
+    if (typeof source === 'object' && 'uri' in source && source.uri) {
+      const options = optimizationOptions || IMAGE_PRESETS[imagePreset];
+      const optimizedUri = optimizeCloudinaryImage(source.uri, options);
+      return { uri: optimizedUri };
+    }
+    return source;
+  }, [source, imagePreset, optimizationOptions]);
 
   useEffect(() => {
     if (isLoading) {
@@ -60,7 +75,7 @@ export default function ImageWithSkeleton({
     (typeof source === 'object' && 'uri' in source && !source.uri)
   ) {
     return (
-      <Image source={source} className={className} style={style} onError={handleError} {...props} />
+      <Image source={optimizedSource} className={className} style={style} onError={handleError} {...props} />
     );
   }
 
@@ -85,7 +100,7 @@ export default function ImageWithSkeleton({
             opacity: isLoading ? 0 : fadeAnim,
           }}>
           <Image
-            source={source}
+            source={optimizedSource}
             className="h-full w-full"
             style={{ width: '100%', height: '100%' }}
             onLoad={handleLoad}
