@@ -21,7 +21,7 @@ type QuoteController struct {
 func NewQuoteController(enhancedNotificationService *services.EnhancedNotificationService) *QuoteController {
 	return &QuoteController{
 		BaseController:              *NewBaseController(),
-		quoteService:                services.NewQuoteService(),
+		quoteService:                services.NewQuoteService(enhancedNotificationService),
 		enhancedNotificationService: enhancedNotificationService,
 	}
 }

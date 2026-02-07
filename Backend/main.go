@@ -232,7 +232,7 @@ func main() {
 
 	// Initialize services with WebSocket service and notification service
 	chatService := services.NewChatService(wsService, enhancedNotificationService)
-	workerAssignmentService := services.NewWorkerAssignmentService(chatService)
+	workerAssignmentService := services.NewWorkerAssignmentService(chatService, enhancedNotificationService)
 
 	// Initialize Simple Conversation services
 	simpleConversationRepo := repositories.NewSimpleConversationRepository(db)
@@ -292,6 +292,9 @@ func main() {
 
 	// Setup booking routes with notification service
 	routes.SetupBookingRoutes(bookingGroup, enhancedNotificationService)
+
+	// Setup payment segment routes with notification service
+	routes.SetupPaymentSegmentRoutes(r.Group("/api/v1"), enhancedNotificationService)
 
 	// Setup property routes with notification service
 	routes.SetupPropertyRoutes(r.Group("/api/v1"), enhancedNotificationService)

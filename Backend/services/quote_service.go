@@ -11,16 +11,18 @@ import (
 )
 
 type QuoteService struct {
-	bookingRepo           *repositories.BookingRepository
-	userRepo              *repositories.UserRepository
-	paymentSegmentRepo    *repositories.PaymentSegmentRepository
+	bookingRepo                 *repositories.BookingRepository
+	userRepo                    *repositories.UserRepository
+	paymentSegmentRepo          *repositories.PaymentSegmentRepository
+	enhancedNotificationService *EnhancedNotificationService
 }
 
-func NewQuoteService() *QuoteService {
+func NewQuoteService(enhancedNotificationService *EnhancedNotificationService) *QuoteService {
 	return &QuoteService{
-		bookingRepo:        repositories.NewBookingRepository(),
-		userRepo:           repositories.NewUserRepository(),
-		paymentSegmentRepo: repositories.NewPaymentSegmentRepository(),
+		bookingRepo:                 repositories.NewBookingRepository(),
+		userRepo:                    repositories.NewUserRepository(),
+		paymentSegmentRepo:          repositories.NewPaymentSegmentRepository(),
+		enhancedNotificationService: enhancedNotificationService,
 	}
 }
 
@@ -87,17 +89,43 @@ func (qs *QuoteService) ProvideQuote(bookingID uint, adminID uint, req *models.P
 	
 	// Send quote provided notification
 	go func() {
-		// Get user and service details for notification
-		var user models.User
-		err := qs.userRepo.FindByID(&user, booking.UserID)
+		if qs.enhancedNotificationService == nil {
+			logrus.Warn("Enhanced notification service not available, skipping quote notification")
+			return
+		}
+
+		// Get service details for notification
+		var service models.Service
+		serviceRepo := repositories.NewServiceRepository()
+		err := serviceRepo.FindByID(&service, booking.ServiceID)
+
+		serviceName := "Service"
 		if err == nil {
-			// Get service details
-			var service models.Service
-			serviceRepo := repositories.NewServiceRepository()
-			err = serviceRepo.FindByID(&service, booking.ServiceID)
-			if err == nil {
-				// Create quote object for notification
-			}
+			serviceName = service.Name
+		}
+
+		title := "Quote Ready!"
+		body := fmt.Sprintf("Admin has provided a quote of ₹%.2f for your %s booking. Review and accept to proceed.", segmentsTotal, serviceName)
+
+		notificationReq := &NotificationRequest{
+			UserID:   booking.UserID,
+			Type:     models.NotificationTypeBooking,
+			Title:    title,
+			Body:     body,
+			Data: map[string]string{
+				"type":        "quote_provided",
+				"bookingId":   fmt.Sprintf("%d", booking.ID),
+				"quoteAmount": fmt.Sprintf("%.2f", segmentsTotal),
+				"serviceName": serviceName,
+			},
+			Priority: "high",
+		}
+
+		_, err = qs.enhancedNotificationService.SendNotification(notificationReq)
+		if err != nil {
+			logrus.Errorf("Failed to send quote notification for booking %d: %v", booking.ID, err)
+		} else {
+			logrus.Infof("Sent quote notification for booking %d to user %d", booking.ID, booking.UserID)
 		}
 	}()
 	

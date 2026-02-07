@@ -71,7 +71,7 @@ func SetupRoutes(r *gin.Engine) {
 		
 		// Payment routes
 		SetupPaymentRoutes(v1)
-		SetupPaymentSegmentRoutes(v1)
+		// Payment segment routes will be set up in main.go with notification service
 		SetupAdminPaymentRoutes(v1)
 		
 		// Ledger routes

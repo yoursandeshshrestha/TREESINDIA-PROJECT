@@ -14,9 +14,9 @@ type PaymentSegmentController struct {
 	quoteService *services.QuoteService
 }
 
-func NewPaymentSegmentController() *PaymentSegmentController {
+func NewPaymentSegmentController(enhancedNotificationService *services.EnhancedNotificationService) *PaymentSegmentController {
 	return &PaymentSegmentController{
-		quoteService: services.NewQuoteService(),
+		quoteService: services.NewQuoteService(enhancedNotificationService),
 	}
 }
 

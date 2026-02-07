@@ -3,12 +3,13 @@ package routes
 import (
 	"treesindia/controllers"
 	"treesindia/middleware"
+	"treesindia/services"
 
 	"github.com/gin-gonic/gin"
 )
 
-func SetupPaymentSegmentRoutes(router *gin.RouterGroup) {
-	paymentSegmentController := controllers.NewPaymentSegmentController()
+func SetupPaymentSegmentRoutes(router *gin.RouterGroup, enhancedNotificationService *services.EnhancedNotificationService) {
+	paymentSegmentController := controllers.NewPaymentSegmentController(enhancedNotificationService)
 
 	// Payment segment routes (user authenticated)
 	paymentSegmentRoutes := router.Group("/bookings/:id/payment-segments")

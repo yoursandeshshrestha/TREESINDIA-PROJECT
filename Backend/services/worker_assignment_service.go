@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"time"
 	"treesindia/models"
 	"treesindia/repositories"
@@ -10,28 +11,30 @@ import (
 )
 
 type WorkerAssignmentService struct {
-	workerAssignmentRepo *repositories.WorkerAssignmentRepository
-	bookingRepo          *repositories.BookingRepository
-	userRepo             *repositories.UserRepository
-	workerRepo           *repositories.WorkerRepository
-	serviceRepo          *repositories.ServiceRepository
-	notificationService  *NotificationService
-	chatService          *ChatService
-	callMaskingService   *CallMaskingService
-	walletService        *UnifiedWalletService
+	workerAssignmentRepo        *repositories.WorkerAssignmentRepository
+	bookingRepo                 *repositories.BookingRepository
+	userRepo                    *repositories.UserRepository
+	workerRepo                  *repositories.WorkerRepository
+	serviceRepo                 *repositories.ServiceRepository
+	notificationService         *NotificationService
+	chatService                 *ChatService
+	callMaskingService          *CallMaskingService
+	walletService               *UnifiedWalletService
+	enhancedNotificationService *EnhancedNotificationService
 }
 
-func NewWorkerAssignmentService(chatService *ChatService) *WorkerAssignmentService {
+func NewWorkerAssignmentService(chatService *ChatService, enhancedNotificationService *EnhancedNotificationService) *WorkerAssignmentService {
 	return &WorkerAssignmentService{
-		workerAssignmentRepo: repositories.NewWorkerAssignmentRepository(),
-		bookingRepo:          repositories.NewBookingRepository(),
-		userRepo:             repositories.NewUserRepository(),
-		workerRepo:           repositories.NewWorkerRepository(),
-		serviceRepo:          repositories.NewServiceRepository(),
-		notificationService:  NewNotificationService(),
-		chatService:          chatService,
-		callMaskingService:   NewCallMaskingService(),
-		walletService:        NewUnifiedWalletService(),
+		workerAssignmentRepo:        repositories.NewWorkerAssignmentRepository(),
+		bookingRepo:                 repositories.NewBookingRepository(),
+		userRepo:                    repositories.NewUserRepository(),
+		workerRepo:                  repositories.NewWorkerRepository(),
+		serviceRepo:                 repositories.NewServiceRepository(),
+		notificationService:         NewNotificationService(),
+		chatService:                 chatService,
+		callMaskingService:          NewCallMaskingService(),
+		walletService:               NewUnifiedWalletService(),
+		enhancedNotificationService: enhancedNotificationService,
 	}
 }
 
@@ -338,14 +341,52 @@ func (was *WorkerAssignmentService) StartAssignment(assignmentID uint, workerID 
 
 	// Send in-app notification to user about work started
 	go func() {
+		if was.enhancedNotificationService == nil {
+			logrus.Warn("Enhanced notification service not available, skipping work started notification")
+			return
+		}
+
 		// Get worker and service details for notification
 		var worker models.User
 		err := was.userRepo.FindByID(&worker, assignment.WorkerID)
+		if err != nil {
+			logrus.Errorf("Failed to get worker details for notification: %v", err)
+			return
+		}
+
+		var service models.Service
+		err = was.serviceRepo.FindByID(&service, booking.ServiceID)
+
+		workerName := worker.Name
+		serviceName := "Service"
 		if err == nil {
-			var service models.Service
-			err = was.serviceRepo.FindByID(&service, booking.ServiceID)
-			if err == nil {
-			}
+			serviceName = service.Name
+		}
+
+		title := "Work Started!"
+		body := fmt.Sprintf("%s has started working on your %s booking", workerName, serviceName)
+
+		notificationReq := &NotificationRequest{
+			UserID:   booking.UserID,
+			Type:     models.NotificationTypeBooking,
+			Title:    title,
+			Body:     body,
+			Data: map[string]string{
+				"type":         "work_started",
+				"bookingId":    fmt.Sprintf("%d", booking.ID),
+				"assignmentId": fmt.Sprintf("%d", assignment.ID),
+				"workerId":     fmt.Sprintf("%d", assignment.WorkerID),
+				"workerName":   workerName,
+				"serviceName":  serviceName,
+			},
+			Priority: "high",
+		}
+
+		_, err = was.enhancedNotificationService.SendNotification(notificationReq)
+		if err != nil {
+			logrus.Errorf("Failed to send work started notification for assignment %d: %v", assignment.ID, err)
+		} else {
+			logrus.Infof("Sent work started notification for assignment %d to user %d", assignment.ID, booking.UserID)
 		}
 	}()
 
