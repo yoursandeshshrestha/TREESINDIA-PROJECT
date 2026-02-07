@@ -67,6 +67,11 @@ export const formatCurrency = (amount: number): string => {
 };
 
 export const formatDate = (dateString: string, includeTime = false): string => {
+  if (!dateString) return "N/A";
+
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "N/A";
+
   const options: Intl.DateTimeFormatOptions = {
     year: "numeric",
     month: includeTime ? "long" : "short",
@@ -78,7 +83,7 @@ export const formatDate = (dateString: string, includeTime = false): string => {
     options.minute = "2-digit";
   }
 
-  return new Date(dateString).toLocaleDateString("en-US", options);
+  return date.toLocaleDateString("en-US", options);
 };
 
 export const formatUserType = (userType: UserType): string => {
@@ -94,7 +99,7 @@ export const formatGender = (gender: Gender): string => {
 
 // Validation Functions
 export const validateUserForm = (
-  formData: Partial<User>
+  formData: Partial<User> & { admin_role?: string }
 ): Record<string, string> => {
   const errors: Record<string, string> = {};
 
@@ -114,6 +119,11 @@ export const validateUserForm = (
 
   if (formData.wallet_balance !== undefined && formData.wallet_balance < 0) {
     errors.wallet_balance = "Wallet balance cannot be negative";
+  }
+
+  // Validate admin_role is required when user_type is admin
+  if (formData.user_type === "admin" && !formData.admin_role) {
+    errors.admin_role = "Admin role is required for admin users";
   }
 
   return errors;

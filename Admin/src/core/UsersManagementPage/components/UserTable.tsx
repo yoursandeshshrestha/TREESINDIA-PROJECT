@@ -221,24 +221,30 @@ const UserTable = ({
 
             {
               header: "Account Details",
-              accessor: (row: User) => (
-                <div className="space-y-1 text-sm">
-                  <div className="flex items-center space-x-1 text-gray-600">
-                    <Calendar className="h-3 w-3" />
-                    <span>Joined {formatDate(row.CreatedAt)}</span>
+              accessor: (row: User) => {
+                // Check for both snake_case and PascalCase as API may return either
+                const createdAt = (row as unknown as Record<string, string>).created_at || row.CreatedAt;
+                const lastLoginAt = (row as unknown as Record<string, string>).last_login_at || row.last_login_at;
+
+                return (
+                  <div className="space-y-1 text-sm">
+                    <div className="flex items-center space-x-1 text-gray-600">
+                      <Calendar className="h-3 w-3" />
+                      <span>Joined {formatDate(createdAt)}</span>
+                    </div>
+                    {lastLoginAt && (
+                      <div className="text-xs text-gray-500">
+                        Last login: {formatDate(lastLoginAt)}
+                      </div>
+                    )}
+                    {row.gender && (
+                      <div className="text-xs text-gray-500 capitalize">
+                        {row.gender.replace("_", " ")}
+                      </div>
+                    )}
                   </div>
-                  {row.last_login_at && (
-                    <div className="text-xs text-gray-500">
-                      Last login: {formatDate(row.last_login_at)}
-                    </div>
-                  )}
-                  {row.gender && (
-                    <div className="text-xs text-gray-500 capitalize">
-                      {row.gender.replace("_", " ")}
-                    </div>
-                  )}
-                </div>
-              ),
+                );
+              },
             },
           ]}
           data={users}

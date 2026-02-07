@@ -131,14 +131,21 @@ function BrokerTable({
     },
     {
       header: "Joined",
-      accessor: (broker: EnhancedBroker) => (
-        <div className="text-sm text-gray-500">
-          {format(
-            new Date(broker.user?.CreatedAt || broker.CreatedAt),
-            "MMM dd, yyyy"
-          )}
-        </div>
-      ),
+      accessor: (broker: EnhancedBroker) => {
+        // Check both snake_case and PascalCase as API may return either
+        const userDate = (broker.user as unknown as Record<string, string>)?.created_at || broker.user?.CreatedAt;
+        const brokerDate = (broker as unknown as Record<string, string>).created_at || broker.CreatedAt;
+        const dateValue = userDate || brokerDate;
+
+        const date = dateValue ? new Date(dateValue) : null;
+        const isValidDate = date && !isNaN(date.getTime());
+
+        return (
+          <div className="text-sm text-gray-500">
+            {isValidDate ? format(date, "MMM dd, yyyy") : "N/A"}
+          </div>
+        );
+      },
     },
   ];
 

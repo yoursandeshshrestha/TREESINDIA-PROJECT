@@ -109,8 +109,8 @@ export default function WorkerDetailPage() {
         const transformedWorker: EnhancedWorker = {
           ID: workerData?.ID ?? workerData?.id ?? user.ID,
           id: workerData?.ID ?? workerData?.id ?? user.id ?? user.ID,
-          CreatedAt: workerData?.CreatedAt ?? workerData?.created_at ?? user.CreatedAt,
-          UpdatedAt: workerData?.UpdatedAt ?? workerData?.updated_at ?? user.UpdatedAt,
+          CreatedAt: workerData?.CreatedAt ?? workerData?.created_at ?? (user as unknown as Record<string, string>).created_at ?? user.CreatedAt,
+          UpdatedAt: workerData?.UpdatedAt ?? workerData?.updated_at ?? (user as unknown as Record<string, string>).updated_at ?? user.UpdatedAt,
           DeletedAt: workerData?.DeletedAt ?? workerData?.deleted_at ?? null,
           user_id: workerData?.user_id ?? user.ID,
           role_application_id: workerData?.role_application_id ?? null,
@@ -253,9 +253,11 @@ export default function WorkerDetailPage() {
               <p className="text-sm text-gray-600">
                 Joined on{" "}
                 {(() => {
-                  const dateStr = worker.user?.CreatedAt || worker.CreatedAt;
-                  const date = new Date(dateStr);
-                  return !isNaN(date.getTime()) ? format(date, "MMM dd, yyyy") : "N/A";
+                  const userDate = (worker.user as unknown as Record<string, string>)?.created_at || worker.user?.CreatedAt;
+                  const workerDate = (worker as unknown as Record<string, string>).created_at || worker.CreatedAt;
+                  const dateStr = userDate || workerDate;
+                  const date = dateStr ? new Date(dateStr) : null;
+                  return date && !isNaN(date.getTime()) ? format(date, "MMM dd, yyyy") : "N/A";
                 })()}
               </p>
             </div>
@@ -324,7 +326,7 @@ export default function WorkerDetailPage() {
                         <Phone className="w-4 h-4 text-gray-400" />
                         <div className="flex-1">
                           <p className="text-sm text-gray-600">
-                            Alternative Phone
+                            Alternative Phone (Optional)
                           </p>
                           <div className="flex items-center space-x-2">
                             <p className="font-medium">
@@ -351,9 +353,11 @@ export default function WorkerDetailPage() {
                         <p className="text-sm text-gray-600">Joined</p>
                         <p className="font-medium">
                           {(() => {
-                            const dateStr = worker.user?.CreatedAt || worker.CreatedAt;
-                            const date = new Date(dateStr);
-                            return !isNaN(date.getTime()) ? format(date, "MMM dd, yyyy") : "N/A";
+                            const userDate = (worker.user as unknown as Record<string, string>)?.created_at || worker.user?.CreatedAt;
+                            const workerDate = (worker as unknown as Record<string, string>).created_at || worker.CreatedAt;
+                            const dateStr = userDate || workerDate;
+                            const date = dateStr ? new Date(dateStr) : null;
+                            return date && !isNaN(date.getTime()) ? format(date, "MMM dd, yyyy") : "N/A";
                           })()}
                         </p>
                       </div>
@@ -602,14 +606,6 @@ export default function WorkerDetailPage() {
                       : "Make Normal Worker"}
                   </Button>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">
-                    Role Application ID
-                  </span>
-                  <span className="font-medium">
-                    {worker.role_application_id || "N/A"}
-                  </span>
-                </div>
               </div>
             </div>
 
@@ -645,9 +641,12 @@ export default function WorkerDetailPage() {
                     ₹{worker.user?.wallet_balance?.toFixed(2) || "0.00"}
                   </span>
                 </div>
-                {worker.user?.last_login_at && (() => {
-                  const date = new Date(worker.user.last_login_at);
-                  return !isNaN(date.getTime()) ? (
+                {(() => {
+                  const lastLoginDate = (worker.user as unknown as Record<string, string>)?.last_login_at || worker.user?.last_login_at;
+                  const date = lastLoginDate ? new Date(lastLoginDate) : null;
+                  const isValidDate = date && !isNaN(date.getTime());
+
+                  return isValidDate ? (
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Last Login</span>
                       <span className="font-medium text-xs">

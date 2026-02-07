@@ -56,7 +56,12 @@ const BookingTable: React.FC<BookingTableProps> = ({
   } = useAvailableWorkers({});
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-IN", {
+    if (!dateString) return "N/A";
+
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "N/A";
+
+    return date.toLocaleDateString("en-IN", {
       year: "numeric",
       month: "short",
       day: "numeric",

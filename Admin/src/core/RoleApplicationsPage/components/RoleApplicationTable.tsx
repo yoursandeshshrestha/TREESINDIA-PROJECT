@@ -167,11 +167,17 @@ function RoleApplicationTable({
     },
     {
       header: "Submitted",
-      accessor: (application: EnhancedRoleApplication) => (
-        <div className="text-sm text-gray-500">
-          {format(new Date(application.submitted_at), "MMM dd, yyyy")}
-        </div>
-      ),
+      accessor: (application: EnhancedRoleApplication) => {
+        const dateValue = application.submitted_at;
+        const date = dateValue ? new Date(dateValue) : null;
+        const isValidDate = date && !isNaN(date.getTime());
+
+        return (
+          <div className="text-sm text-gray-500">
+            {isValidDate ? format(date, "MMM dd, yyyy") : "N/A"}
+          </div>
+        );
+      },
     },
   ];
 

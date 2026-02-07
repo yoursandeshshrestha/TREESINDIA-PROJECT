@@ -65,8 +65,8 @@ export default function BrokerDetailPage() {
         const transformedBroker: EnhancedBroker = {
           ID: brokerData?.ID || userId,
           id: brokerData?.ID || userId,
-          CreatedAt: brokerData?.CreatedAt || user.CreatedAt,
-          UpdatedAt: brokerData?.UpdatedAt || user.UpdatedAt,
+          CreatedAt: brokerData?.CreatedAt || (user as unknown as Record<string, string>).created_at || user.CreatedAt,
+          UpdatedAt: brokerData?.UpdatedAt || (user as unknown as Record<string, string>).updated_at || user.UpdatedAt,
           DeletedAt: brokerData?.DeletedAt || user.DeletedAt,
           user_id: brokerData?.user_id || userId,
           role_application_id: brokerData?.role_application_id || null,
@@ -165,9 +165,11 @@ export default function BrokerDetailPage() {
               <p className="text-sm text-gray-600">
                 Joined on{" "}
                 {(() => {
-                  const dateStr = broker.user?.CreatedAt || broker.CreatedAt;
-                  const date = new Date(dateStr);
-                  return !isNaN(date.getTime())
+                  const userDate = (broker.user as unknown as Record<string, string>)?.created_at || broker.user?.CreatedAt;
+                  const brokerDate = (broker as unknown as Record<string, string>).created_at || broker.CreatedAt;
+                  const dateStr = userDate || brokerDate;
+                  const date = dateStr ? new Date(dateStr) : null;
+                  return date && !isNaN(date.getTime())
                     ? format(date, "MMM dd, yyyy")
                     : "N/A";
                 })()}
@@ -229,7 +231,7 @@ export default function BrokerDetailPage() {
                         <Phone className="w-4 h-4 text-gray-400" />
                         <div>
                           <p className="text-sm text-gray-600">
-                            Alternative Phone
+                            Alternative Phone (Optional)
                           </p>
                           <p className="font-medium">
                             {broker.contact_info.alternative_number}
@@ -243,10 +245,11 @@ export default function BrokerDetailPage() {
                         <p className="text-sm text-gray-600">Joined</p>
                         <p className="font-medium">
                           {(() => {
-                            const dateStr =
-                              broker.user?.CreatedAt || broker.CreatedAt;
-                            const date = new Date(dateStr);
-                            return !isNaN(date.getTime())
+                            const userDate = (broker.user as unknown as Record<string, string>)?.created_at || broker.user?.CreatedAt;
+                            const brokerDate = (broker as unknown as Record<string, string>).created_at || broker.CreatedAt;
+                            const dateStr = userDate || brokerDate;
+                            const date = dateStr ? new Date(dateStr) : null;
+                            return date && !isNaN(date.getTime())
                               ? format(date, "MMM dd, yyyy")
                               : "N/A";
                           })()}
@@ -398,14 +401,6 @@ export default function BrokerDetailPage() {
                     {broker.is_active ? "Active" : "Inactive"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">
-                    Role Application ID
-                  </span>
-                  <span className="font-medium">
-                    {broker.role_application_id || "N/A"}
-                  </span>
-                </div>
               </div>
             </div>
 
@@ -441,18 +436,20 @@ export default function BrokerDetailPage() {
                     ₹{broker.user?.wallet_balance?.toFixed(2) || "0.00"}
                   </span>
                 </div>
-                {broker.user?.last_login_at &&
-                  !isNaN(new Date(broker.user.last_login_at).getTime()) && (
+                {(() => {
+                  const lastLoginDate = (broker.user as unknown as Record<string, string>)?.last_login_at || broker.user?.last_login_at;
+                  const date = lastLoginDate ? new Date(lastLoginDate) : null;
+                  const isValidDate = date && !isNaN(date.getTime());
+
+                  return isValidDate ? (
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Last Login</span>
                       <span className="font-medium text-xs">
-                        {format(
-                          new Date(broker.user.last_login_at),
-                          "MMM dd, yyyy HH:mm"
-                        )}
+                        {format(date, "MMM dd, yyyy HH:mm")}
                       </span>
                     </div>
-                  )}
+                  ) : null;
+                })()}
               </div>
             </div>
           </div>
