@@ -407,7 +407,7 @@ export function ServiceModal({
 
                 <div>
                   <CategoryTreeSelector
-                    key={`category-selector-${formData.category_id}-${categories.length}`}
+                    key={`category-selector-${categories.length}`}
                     categories={categories}
                     selectedCategoryId={formData.category_id}
                     onSelect={(categoryId) =>

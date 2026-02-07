@@ -143,33 +143,20 @@ const CategoryTreeNode: React.FC<CategoryTreeNodeProps> = ({
         </button>
 
         {/* Checkbox */}
-        <input
-          type="checkbox"
-          checked={isChecked}
-          onChange={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            // Only allow unselecting the actual selected category, not parents
-            if (isSelected) {
-              onSelect(0);
-            } else if (!isInParentChain) {
-              // Only select if it's not a parent of the currently selected category
-              onSelect(category.id);
-            }
-            // If it's a parent in the chain, do nothing
-          }}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          className={`w-5 h-5 rounded border-2 focus:ring-2 focus:ring-blue-500 cursor-pointer transition-colors ${
-            isChecked
-              ? isInParentChain
-                ? "bg-blue-600 border-blue-600 text-white"
-                : "bg-blue-600 border-blue-600 text-white"
-              : "border-gray-300 bg-white"
-          }`}
-        />
+        <div className="pointer-events-none">
+          <input
+            type="checkbox"
+            checked={isChecked}
+            readOnly
+            className={`w-5 h-5 rounded border-2 focus:ring-2 focus:ring-blue-500 transition-colors ${
+              isChecked
+                ? isInParentChain
+                  ? "bg-blue-600 border-blue-600 text-white"
+                  : "bg-blue-600 border-blue-600 text-white"
+                : "border-gray-300 bg-white"
+            }`}
+          />
+        </div>
 
         {/* Icon */}
         <div
@@ -267,13 +254,15 @@ const CategoryTreeSelector: React.FC<CategoryTreeSelectorProps> = ({
     // Check if we're unselecting (going from selected to 0)
     const isUnselecting = previousSelectedId > 0 && selectedCategoryId === 0;
 
-    // Update the ref for next render
-    previousSelectedIdRef.current = selectedCategoryId;
-
     // If unselecting, don't change the expanded state - keep tree open
     if (isUnselecting) {
+      // Update the ref for next render
+      previousSelectedIdRef.current = selectedCategoryId;
       return;
     }
+
+    // Update the ref for next render (after the unselecting check)
+    previousSelectedIdRef.current = selectedCategoryId;
 
     // Use functional update to get current state
     setExpandedNodes((prevExpanded) => {

@@ -220,7 +220,7 @@ const CreateEditUserModal: React.FC<CreateEditUserModalProps> = ({
                 {/* Admin Role (we always treat users created here as admin users) */}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Admin Role
+                    Admin Role *
                   </label>
                   <SearchableDropdown
                     options={[
@@ -240,11 +240,18 @@ const CreateEditUserModal: React.FC<CreateEditUserModalProps> = ({
                       handleInputChange("admin_role", value as AdminRole)
                     }
                     placeholder="Select admin role"
+                    error={errors.admin_role}
                   />
-                  <p className="mt-1 text-xs text-gray-500">
-                    Select the primary role for this admin to control what they
-                    can manage in the panel.
-                  </p>
+                  {errors.admin_role ? (
+                    <p className="mt-1 text-xs text-red-600">
+                      {errors.admin_role}
+                    </p>
+                  ) : (
+                    <p className="mt-1 text-xs text-gray-500">
+                      Select the primary role for this admin to control what
+                      they can manage in the panel.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
