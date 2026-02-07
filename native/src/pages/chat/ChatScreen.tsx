@@ -124,7 +124,7 @@ export default function ChatScreen(props: ChatScreenProps) {
 
       onNavigateToConversation(conversation.id, {
         id: otherUserId,
-        name: otherUser?.name || 'Unknown User',
+        name: otherUser?.name || otherUser?.phone || 'Unknown User',
         phone: otherUser?.phone,
         profileImage: otherUser?.profile_image_url || otherUser?.avatar,
       });

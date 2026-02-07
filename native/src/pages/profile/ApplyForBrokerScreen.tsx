@@ -38,7 +38,7 @@ interface ContactInfo {
   name: string;
   email: string;
   phone: string;
-  alternative_number: string;
+  alternative_number?: string;
 }
 
 interface BrokerDetails {
@@ -400,7 +400,7 @@ export default function ApplyForBrokerScreen({
 
       <View className="mb-4">
         <Input
-          label="Alternative Phone Number"
+          label="Alternative Phone Number (Optional)"
           value={contactInfo.alternative_number}
           onChangeText={(text) => setContactInfo({ ...contactInfo, alternative_number: text })}
           placeholder="Enter alternative phone number"

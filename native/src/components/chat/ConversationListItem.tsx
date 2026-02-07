@@ -31,7 +31,7 @@ export const ConversationListItem: React.FC<ConversationListItemProps> = ({
   };
 
   const otherUser = getOtherUser();
-  const displayName = otherUser?.name || 'Unknown User';
+  const displayName = otherUser?.name || otherUser?.phone || 'Unknown User';
   const avatarUrl = otherUser?.profile_image_url || otherUser?.avatar;
   const lastMessage = conversation.last_message_text || 'Tap to start chatting';
   const lastMessageTime = conversation.last_message_created_at;

@@ -153,6 +153,12 @@ export default function BookingScreen(props: BookingScreenProps) {
   };
 
   const formatBookingId = (booking: Booking): string => {
+    const bookingData = booking as any;
+    // Check if booking_reference exists from API first
+    if (bookingData.booking_reference) {
+      return bookingData.booking_reference;
+    }
+    // Otherwise, generate from created_at
     const createdAt = booking.created_at ? new Date(booking.created_at) : new Date();
 
     const year = createdAt.getFullYear();
