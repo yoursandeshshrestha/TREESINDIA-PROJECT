@@ -77,6 +77,7 @@ func (uc *UserController) GetUserProfile(c *gin.Context) {
 	var user models.User
 	if err := uc.db.Preload("UserNotificationSettings").
 		Preload("Subscription").
+		Preload("AdminRoles").
 		First(&user, userID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, views.CreateErrorResponse("User not found", "User does not exist"))
@@ -84,6 +85,12 @@ func (uc *UserController) GetUserProfile(c *gin.Context) {
 		}
 		c.JSON(http.StatusInternalServerError, views.CreateErrorResponse("Database error", err.Error()))
 		return
+	}
+
+	// Extract admin role codes for response
+	var adminRoles []string
+	for _, role := range user.AdminRoles {
+		adminRoles = append(adminRoles, string(role.Code))
 	}
 
 	// Prepare optimized response data
@@ -112,6 +119,9 @@ func (uc *UserController) GetUserProfile(c *gin.Context) {
 			"application_date": user.ApplicationDate,
 			"approval_date":    user.ApprovalDate,
 		},
+
+		// Admin Roles (only populated when user_type is admin)
+		"admin_roles": adminRoles,
 	}
 
 	// Add notification settings if they exist
