@@ -55,7 +55,7 @@ type ContactInfoData struct {
 	Name              string `json:"name"`
 	Email             string `json:"email"`
 	Phone             string `json:"phone"`
-	AlternativeNumber string `json:"alternative_number"`
+	AlternativeNumber string `json:"alternative_number,omitempty"`
 }
 
 // AddressData represents the parsed address information

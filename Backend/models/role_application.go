@@ -26,7 +26,7 @@ const (
 
 // Enhanced JSON types for better frontend consumption
 type ContactInfo struct {
-	AlternativeNumber string `json:"alternative_number"`
+	AlternativeNumber string `json:"alternative_number,omitempty"`
 }
 
 type WorkerAddress struct {
