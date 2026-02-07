@@ -9,7 +9,7 @@ import { openChatModalWithUser } from "@/store/slices/chatModalSlice";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { VendorCard } from "@/commonComponents/VendorCard/VendorCard";
-import { VendorFilters } from "@/types/vendor";
+import { VendorFilters, Vendor } from "@/types/vendor";
 
 export default function TopVendorsSection() {
   const router = useRouter();
@@ -64,13 +64,13 @@ export default function TopVendorsSection() {
     );
   };
 
-  const handleCallClick = (vendor: { contact_phone: string }) => {
-    if (!vendor.contact_phone) {
+  const handleCallClick = (vendor: Vendor) => {
+    if (!vendor.contact_person_phone) {
       console.error("No phone number available");
       return;
     }
     // Open phone dialer
-    window.location.href = `tel:${vendor.contact_phone}`;
+    window.location.href = `tel:${vendor.contact_person_phone}`;
   };
 
   const getSectionTitle = () => {

@@ -110,8 +110,7 @@ const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({
         />
 
         <TextField
-          label="Alternative Phone Number"
-          required
+          label="Alternative Phone Number (Optional)"
           type="tel"
           value={contactInfo.alternative_number || ""}
           onChange={(e) => {

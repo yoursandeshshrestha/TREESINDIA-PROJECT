@@ -136,6 +136,18 @@ export interface Service {
   service_areas: ServiceArea[];
 }
 
+export interface ServiceFilters {
+  page?: number;
+  limit?: number;
+  category?: string;
+  subcategory?: string;
+  type?: "fixed-price" | "inquiry-based";
+  exclude_inactive?: boolean;
+  city?: string;
+  state?: string;
+  search?: string;
+}
+
 export interface ServicesResponse {
   success: boolean;
   message: string;

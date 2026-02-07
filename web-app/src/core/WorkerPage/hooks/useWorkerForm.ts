@@ -103,9 +103,8 @@ export function useWorkerForm() {
             errors.push("Email address is required");
           } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactInfo.email)) {
             errors.push("Please enter a valid email address format");
-          } else if (!contactInfo.alternative_number?.trim()) {
-            errors.push("Alternative phone number is required");
           } else if (
+            contactInfo.alternative_number?.trim() &&
             !/^\+?[0-9]{10,20}$/.test(contactInfo.alternative_number)
           ) {
             errors.push(

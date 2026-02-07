@@ -7,7 +7,7 @@ import { openServiceDetailModal } from "@/store/slices/serviceDetailModalSlice";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import ServiceCard from "@/commonComponents/ServiceCard/ServiceCard";
-import { ServiceFilters } from "@/types/api";
+import { ServiceFilters, Service } from "@/types/api";
 
 export default function ConstructionServicesSection() {
   const dispatch = useAppDispatch();
@@ -34,7 +34,7 @@ export default function ConstructionServicesSection() {
 
   const services = Array.isArray(response?.data?.services) ? response.data.services : [];
 
-  const handleServiceClick = (service: { id: number; name: string }) => {
+  const handleServiceClick = (service: Service) => {
     dispatch(openServiceDetailModal(service));
   };
 
