@@ -60,9 +60,12 @@ interface HomeScreenProps {
   onNavigateToProjects?: (filters?: ProjectFilters) => void;
   onNavigateToWorkers?: (filters?: WorkerFilters) => void;
   onNavigateToVendors?: (filters?: VendorFilters) => void;
-  onNavigateToCategoryServices?: (category: Category) => void;
+  onNavigateToCategoryServices?: (category: Category, parentCategory?: Category) => void;
   onNavigateToSubscription?: () => void;
   addressRefreshTrigger?: number;
+  initialCategoryToOpen?: Category | null;
+  categorySheetTrigger?: number;
+  onCategorySheetClosed?: () => void;
 }
 
 export default function HomeScreen({
@@ -77,6 +80,9 @@ export default function HomeScreen({
   onNavigateToCategoryServices,
   onNavigateToSubscription,
   addressRefreshTrigger,
+  initialCategoryToOpen,
+  categorySheetTrigger,
+  onCategorySheetClosed,
 }: HomeScreenProps) {
   const insets = useSafeAreaInsets();
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
@@ -103,6 +109,14 @@ export default function HomeScreen({
   const sectionPositions = useRef<{ [key: string]: number }>({});
   const scrollViewRef = useRef<ScrollView>(null);
   const lastScrollY = useRef(0);
+
+  // Handle initial category to open (when returning from category services screen)
+  React.useEffect(() => {
+    if (initialCategoryToOpen && categorySheetTrigger && categorySheetTrigger > 0) {
+      setSelectedCategory(initialCategoryToOpen);
+      setShowCategorySheet(true);
+    }
+  }, [initialCategoryToOpen, categorySheetTrigger]);
 
   // Handle section layout to track position
   const handleSectionLayout = useCallback((sectionKey: SectionType, y: number) => {
@@ -450,6 +464,7 @@ export default function HomeScreen({
         onClose={() => {
           setShowCategorySheet(false);
           setSelectedCategory(null);
+          onCategorySheetClosed?.();
         }}
         category={selectedCategory}
         onSelectSubcategory={(subcategory) => {
@@ -480,7 +495,7 @@ export default function HomeScreen({
               selectedCategory?.name.toLowerCase().includes('construction service');
 
             if (isHomeOrConstruction && onNavigateToCategoryServices) {
-              onNavigateToCategoryServices(subcategory);
+              onNavigateToCategoryServices(subcategory, selectedCategory);
             } else {
               // For other subcategories, navigate to services with filter
               if (onNavigateToServices) {

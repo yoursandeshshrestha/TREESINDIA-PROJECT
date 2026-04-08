@@ -21,6 +21,7 @@ interface CategoryServicesScreenProps {
   onBack: () => void;
   category: Category;
   onNavigateToSubcategory?: (category: Category) => void;
+  onNavigateToBookingFlow?: (service: Service) => void;
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -41,6 +42,7 @@ export default function CategoryServicesScreen({
   onBack,
   category,
   onNavigateToSubcategory,
+  onNavigateToBookingFlow,
 }: CategoryServicesScreenProps) {
   const [level3Categories, setLevel3Categories] = useState<Category[]>([]); // AC Repair, TV Repair
   const [serviceSections, setServiceSections] = useState<ServiceSectionWithCategories[]>([]);
@@ -236,7 +238,10 @@ export default function CategoryServicesScreen({
   };
 
   const handleBookService = (service: Service) => {
-    // TODO: Navigate to booking screen or show booking flow
+    setShowDetailSheet(false);
+    if (onNavigateToBookingFlow) {
+      onNavigateToBookingFlow(service);
+    }
   };
 
   const renderEmptyState = () => (

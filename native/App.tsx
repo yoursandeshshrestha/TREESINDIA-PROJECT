@@ -83,9 +83,9 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(timeout);
   }, [dispatch]);
 
-  // Only show splash screen during initial app load, not for subsequent loading states
+  // Don't show anything while initializing - let AppContent handle the splash screen
   if (!fontsLoaded || isInitializing) {
-    return <SplashScreen duration={2000} />;
+    return null;
   }
 
   return <>{children}</>;
@@ -137,6 +137,8 @@ function AppContent() {
   const [vendorsInitialFilters, setVendorsInitialFilters] = useState<any>(null);
   const [categoryForServices, setCategoryForServices] = useState<any>(null);
   const [categoryStack, setCategoryStack] = useState<any[]>([]);
+  const [parentCategoryFromHome, setParentCategoryFromHome] = useState<any>(null);
+  const [categorySheetTrigger, setCategorySheetTrigger] = useState<number>(0);
   const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null);
   const [chatWorkerInfo, setChatWorkerInfo] = useState<{
     id: number;
@@ -760,10 +762,13 @@ function AppContent() {
               setCategoryStack(newStack);
               setCategoryForServices(previousCategory);
             } else {
-              // Go back to home
+              // Go back to home - keep parent category to reopen sheet
               setCurrentScreen('home');
               setActiveTab('home');
               setCategoryForServices(null);
+              // Increment trigger to force useEffect to run
+              setCategorySheetTrigger(prev => prev + 1);
+              // parentCategoryFromHome is kept and will be passed to HomeScreen
             }
           }}
           category={categoryForServices}
@@ -771,6 +776,10 @@ function AppContent() {
             // Push current category to stack and navigate to subcategory
             setCategoryStack([...categoryStack, categoryForServices]);
             setCategoryForServices(subcategory);
+          }}
+          onNavigateToBookingFlow={(service) => {
+            setServiceForBooking(service);
+            setCurrentScreen('bookingFlow');
           }}
         />
       );
@@ -814,39 +823,58 @@ function AppContent() {
         }
         return (
           <HomeScreen
-            onNavigateToAddressSelection={() => setCurrentScreen('addressSelection')}
-            onNavigateToServiceSearch={() => setCurrentScreen('serviceSearch')}
+            onNavigateToAddressSelection={() => {
+              setParentCategoryFromHome(null);
+              setCurrentScreen('addressSelection');
+            }}
+            onNavigateToServiceSearch={() => {
+              setParentCategoryFromHome(null);
+              setCurrentScreen('serviceSearch');
+            }}
             onNavigateToBookingFlow={(service) => {
               setServiceForBooking(service);
+              setParentCategoryFromHome(null);
               setCurrentScreen('bookingFlow');
             }}
             onNavigateToProperties={(filters) => {
               setPropertiesInitialFilters(filters);
+              setParentCategoryFromHome(null);
               setCurrentScreen('browseProperties');
             }}
             onNavigateToServices={(filters) => {
               setServicesInitialFilters(filters);
+              setParentCategoryFromHome(null);
               setCurrentScreen('browseServices');
             }}
             onNavigateToProjects={(filters) => {
               setProjectsInitialFilters(filters);
+              setParentCategoryFromHome(null);
               setCurrentScreen('browseProjects');
             }}
             onNavigateToWorkers={(filters) => {
               setWorkersInitialFilters(filters);
+              setParentCategoryFromHome(null);
               setCurrentScreen('browseWorkers');
             }}
             onNavigateToVendors={(filters) => {
               setVendorsInitialFilters(filters);
+              setParentCategoryFromHome(null);
               setCurrentScreen('browseVendors');
             }}
-            onNavigateToCategoryServices={(category) => {
+            onNavigateToCategoryServices={(category, parentCategory) => {
               setCategoryForServices(category);
               setCategoryStack([]);
+              setParentCategoryFromHome(parentCategory || null);
               setCurrentScreen('categoryServices');
             }}
-            onNavigateToSubscription={() => setCurrentScreen('subscription')}
+            onNavigateToSubscription={() => {
+              setParentCategoryFromHome(null);
+              setCurrentScreen('subscription');
+            }}
             addressRefreshTrigger={Date.now()} // Refresh address when screen is shown
+            initialCategoryToOpen={parentCategoryFromHome}
+            categorySheetTrigger={categorySheetTrigger}
+            onCategorySheetClosed={() => setParentCategoryFromHome(null)}
           />
         );
       case 'booking':

@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
-import { Image } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { StyleSheet } from 'react-native';
+import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -14,6 +15,8 @@ interface SplashScreenProps {
 
 export default function SplashScreen({ onFinish, duration = 2000 }: SplashScreenProps) {
   const opacity = useSharedValue(0);
+  const video = useRef<Video>(null);
+  const [videoEnded, setVideoEnded] = useState(false);
 
   useEffect(() => {
     // Fade in
@@ -21,16 +24,23 @@ export default function SplashScreen({ onFinish, duration = 2000 }: SplashScreen
       duration: 500,
       easing: Easing.ease,
     });
+  }, [opacity]);
 
-    // Auto finish after duration
-    const timer = setTimeout(() => {
-      if (onFinish) {
+  useEffect(() => {
+    // When video ends, wait a bit then call onFinish
+    if (videoEnded && onFinish) {
+      const timer = setTimeout(() => {
         onFinish();
-      }
-    }, duration);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [videoEnded, onFinish]);
 
-    return () => clearTimeout(timer);
-  }, [duration, onFinish, opacity]);
+  const handlePlaybackStatusUpdate = (status: AVPlaybackStatus) => {
+    if (status.isLoaded && status.didJustFinish) {
+      setVideoEnded(true);
+    }
+  };
 
   const containerStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
@@ -38,11 +48,22 @@ export default function SplashScreen({ onFinish, duration = 2000 }: SplashScreen
 
   return (
     <Animated.View className="flex-1 items-center justify-center bg-white" style={containerStyle}>
-      <Image
-        source={require('../../assets/logo/main_logo_with_name.png')}
-        className="h-[200px] w-[200px]"
-        resizeMode="contain"
+      <Video
+        ref={video}
+        source={require('../../assets/app-motion.mp4')}
+        style={styles.video}
+        resizeMode={ResizeMode.CONTAIN}
+        shouldPlay
+        isLooping={false}
+        onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
       />
     </Animated.View>
   );
 }
+
+const styles = StyleSheet.create({
+  video: {
+    width: '100%',
+    height: '100%',
+  },
+});
