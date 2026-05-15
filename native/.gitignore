@@ -9,10 +9,6 @@ npm-debug.*
 *.mobileprovision
 *.orig.*
 web-build/
-.env*
-
-# Environment files (use .env.development or .env.production)
-.env
 
 # Firebase configuration files with sensitive keys
 google-services.json
